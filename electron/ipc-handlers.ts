@@ -1,6 +1,7 @@
 import { ensureVelaHome, VELA_HOME } from './utils/config-utils'
 
 import { registerConfigController } from './controllers/config-controller'
+import { registerNotificationController } from './controllers/notification-controller'
 import { registerProjectController } from './controllers/project-controller'
 import { registerFSController } from './controllers/fs-controller'
 import { registerLLMController } from './controllers/llm-controller'
@@ -38,6 +39,7 @@ export function registerIPCHandlers() {
   registerOfficialHomepageController()
   registerModelProviderResourceController()
   registerConfigController()
+  registerNotificationController()
   registerAppDataController()
   registerProjectController()
   registerFSController()

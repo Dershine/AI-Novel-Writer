@@ -7,6 +7,7 @@ import {
 import PromptSettings from './PromptSettings'
 import SkillSettings from './SkillSettings'
 import AppearanceSettings from './AppearanceSettings'
+import NotificationSettings from './NotificationSettings'
 import { useLLMStore } from '../../stores/llm-store'
 import { useThemeStore, FONT_OPTIONS, type FontId } from '../../stores/theme-store'
 import type {
@@ -1350,6 +1351,7 @@ function EditorSection() {
         <Switch checked={autoOpenNextChapterAfterFinalize} onCheckedChange={(checked) => void setAutoOpenNext(checked)} disabled={autoOpenNextSaving} aria-label={text('定稿后打开下一章', 'Open next chapter after finalizing')} />
       </div>
       {autoOpenNextError && <p role="alert" className="text-xs" style={{ color: 'var(--color-error-text)' }}>{autoOpenNextError}</p>}
+      <NotificationSettings />
 
       {/* 说明 */}
       <div

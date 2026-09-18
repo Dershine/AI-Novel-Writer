@@ -41,6 +41,34 @@ afterEach(async () => {
 })
 
 describe('settings persistence truthfulness', () => {
+  it('keeps notifications enabled when saving the preference fails', async () => {
+    invoke.mockImplementation(async (channel: string) => {
+      if (channel === 'config:get') return {}
+      if (channel === 'config:set') return { success: false, error: 'read only' }
+      throw new Error(`Unexpected IPC channel: ${channel}`)
+    })
+    await renderSection('editor')
+    const toggle = page.getByRole('switch', { name: '任务完成时发送系统通知' })
+    await expect.element(toggle).toBeChecked()
+    await act(async () => toggle.click())
+    await expect.element(toggle).toBeChecked()
+    await expect.element(page.getByText(/通知设置保存失败/)).toBeVisible()
+  })
+
+  it('persists the notification switch and sends an explicit test even when disabled', async () => {
+    invoke.mockImplementation(async (channel: string) => {
+      if (channel === 'config:get') return {}
+      return { success: true }
+    })
+    await renderSection('editor')
+    const toggle = page.getByRole('switch', { name: '任务完成时发送系统通知' })
+    await act(async () => toggle.click())
+    await expect.element(toggle).not.toBeChecked()
+    expect(invoke).toHaveBeenCalledWith('config:set', { taskNotificationsEnabled: false })
+    await act(async () => page.getByRole('button', { name: '发送测试通知' }).click())
+    expect(invoke).toHaveBeenCalledWith('notification:test', 'zh-CN')
+    await expect.element(page.getByRole('status')).toBeVisible()
+  })
   it.each([
     ['business failure', () => Promise.resolve({ success: false, error: 'disk full' })],
     ['transport rejection', () => Promise.reject(new Error('IPC unavailable'))],

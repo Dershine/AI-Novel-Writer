@@ -18,6 +18,7 @@ it('preserves complete workflow titles in Chinese and English completion notific
   visit(source)
   expect(handler).toBeDefined()
   const workflowComplete = vi.fn()
+  const invoke = vi.fn(async () => ({ success: true }))
   const completedRun = { id: 'run-1', title: '' }
   let english = false
   // Execute the actual App event handler without mounting unrelated application panels.
@@ -28,6 +29,7 @@ it('preserves complete workflow titles in Chinese and English completion notific
     useWorkflowStore: { getState: () => ({ activeRuns: [], history: [completedRun] }) },
     useLocaleStore: { getState: () => ({ text: (zh: string, en: string) => english ? en : zh }) },
     actionToast: { workflowComplete },
+    ipc: { isElectron: true, invoke },
   })
 
   for (const title of [
@@ -44,6 +46,10 @@ it('preserves complete workflow titles in Chinese and English completion notific
         english ? `“${title}” completed` : `「${title}」已完成`,
         expect.any(Function),
       )
+      expect(invoke).toHaveBeenLastCalledWith('notification:show', expect.objectContaining({
+        runId: completedRun.id,
+        body: expect.stringContaining(title),
+      }))
     }
   }
 })

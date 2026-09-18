@@ -72,6 +72,14 @@ import type {
 
 // ===== 全局配置 =====
 export interface ConfigChannels {
+  'notification:show': {
+    args: [request: { title: string; body: string; runId: string }]
+    return: { success: boolean; error?: string }
+  }
+  'notification:test': {
+    args: [locale: Locale]
+    return: { success: boolean; error?: string }
+  }
   'config:get': {
     args: []
     return: GlobalConfig
@@ -151,6 +159,7 @@ export interface WindowChannels {
 }
 
 export interface WindowEvents {
+  'notification:clicked': { runId: string }
   'window:close-requested': { requestId: string }
 }
 
@@ -178,6 +187,7 @@ export interface GlobalConfig {
   defaultEmbeddingModelId?: string | null
   /** 定稿与后处理成功后，打开下一章的创作窗口（默认关闭）。 */
   autoOpenNextChapterAfterFinalize?: boolean
+  taskNotificationsEnabled?: boolean
   editorFontSize: number
   editorFontFamily: string
   autoSaveInterval: number

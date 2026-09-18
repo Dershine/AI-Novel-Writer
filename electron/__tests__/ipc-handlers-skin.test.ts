@@ -22,6 +22,7 @@ vi.mock('../controllers/window-controller', () => ({
   registerWindowController: mocks.registerWindowController,
 }))
 vi.mock('../controllers/config-controller', () => ({ registerConfigController: vi.fn() }))
+vi.mock('../controllers/notification-controller', () => ({ registerNotificationController: vi.fn() }))
 vi.mock('../controllers/project-controller', () => ({ registerProjectController: vi.fn() }))
 vi.mock('../controllers/fs-controller', () => ({ registerFSController: vi.fn() }))
 vi.mock('../controllers/llm-controller', () => ({ registerLLMController: vi.fn() }))

@@ -43,7 +43,9 @@ export default function AIOutputPanel() {
   const activeRunId = activeRun?.id
   const currentLocale = useLocaleStore(s => s.locale)
   const currentProject = useProjectStore(s => s.currentProject)
-  const [viewRunId, setViewRunId] = useState<string | null>(null)
+  const viewRunId = useLayoutStore(s => s.outputRunId)
+  const setViewRunId = useLayoutStore(s => s.setOutputRunId)
+  const previousActiveRunId = useRef(activeRunId)
   const [recoveryCandidates, setRecoveryCandidates] = useState<RecoveryCandidate[]>([])
   const [recoveryError, setRecoveryError] = useState('')
 
@@ -51,13 +53,15 @@ export default function AIOutputPanel() {
 
   // 自动跟随最新活跃任务
   useEffect(() => {
-    if (!activeRunId) return
+    const changed = previousActiveRunId.current !== activeRunId
+    previousActiveRunId.current = activeRunId
+    if (!activeRunId || !changed) return
     // 异步安排状态同步，避免在 effect 提交阶段触发级联渲染。
     const syncTimer = window.setTimeout(() => {
-      setViewRunId(previousRunId => previousRunId === activeRunId ? previousRunId : activeRunId)
+      setViewRunId(activeRunId)
     }, 0)
     return () => window.clearTimeout(syncTimer)
-  }, [activeRunId])
+  }, [activeRunId, setViewRunId])
 
   useEffect(() => {
     const projectSession = projectSessionContextFromProject(currentProject)

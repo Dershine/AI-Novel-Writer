@@ -19,6 +19,8 @@ export type SettingsSection = 'llm' | 'embedding' | 'proxy' | 'editor' | 'prompt
 export type ChapterCreationPrefill = Record<string, unknown> | null
 
 interface LayoutState {
+  outputRunId: string | null
+  setOutputRunId: (runId: string | null) => void
   // ===== 侧边栏 =====
   sidebarOpen: boolean
   sidebarView: SidebarView
@@ -81,6 +83,8 @@ interface LayoutState {
 }
 
 export const useLayoutStore = create<LayoutState>()((set) => ({
+  outputRunId: null,
+  setOutputRunId: (outputRunId) => set({ outputRunId }),
   // 默认值
   sidebarOpen: true,
   sidebarView: 'project',

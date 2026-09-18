@@ -45,6 +45,7 @@ import path from 'node:path'
 // Electron 41 在部分 Windows 环境中无法启动受限 GPU 子进程（0xC0000135），
 // 随后会触发 Chromium 的致命检查。仅放宽 GPU 子进程，保持 renderer 隔离策略不变。
 if (process.platform === 'win32') {
+  app.setAppUserModelId('com.ai-novel-writer.app')
   app.commandLine.appendSwitch('disable-gpu-sandbox')
 }
 

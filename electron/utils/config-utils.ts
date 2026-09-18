@@ -125,6 +125,7 @@ export const DEFAULT_GLOBAL_CONFIG: GlobalConfig = {
   theme: 'dark',
   defaultModelId: null,
   autoOpenNextChapterAfterFinalize: false,
+  taskNotificationsEnabled: true,
   editorFontSize: 16,
   editorFontFamily: 'Noto Serif SC',
   autoSaveInterval: 30,

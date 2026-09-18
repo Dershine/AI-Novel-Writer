@@ -145,11 +145,32 @@ export default function App() {
       const completedRun = activeRuns.find(r => r.id === runId)
         ?? history.find(r => r.id === runId)
       if (!completedRun) return
+      if (ipc.isElectron) {
+        const project = useProjectStore.getState().currentProject
+        void ipc.invoke('notification:show', {
+          title: text('AI小说作家 · 任务完成', 'AI Novel Writer · Task completed'),
+          body: `${project?.name ?? ''} — ${text(`「${completedRun.title}」已完成`, `“${completedRun.title}” completed`)}`.slice(0, 1000),
+          runId,
+        }).then(result => {
+          if (!result.success) console.warn('[Notifications]', result.error)
+        }).catch(error => console.warn('[Notifications]', error))
+      }
       actionToast.workflowComplete(
         text(`「${completedRun.title}」已完成`, `“${completedRun.title}” completed`),
         () => useLayoutStore.getState().openRightPanel('ai-output')
       )
     })
+
+    const unsubNotificationClick = ipc.isElectron ? ipc.on('notification:clicked', ({ runId }) => {
+      const { activeRuns, history } = useWorkflowStore.getState()
+      const run = activeRuns.find(item => item.id === runId) ?? history.find(item => item.id === runId)
+      if (!run || !sameProjectSessionContext(
+        run.projectSession,
+        projectSessionContextFromProject(useProjectStore.getState().currentProject),
+      )) return
+      useLayoutStore.getState().setOutputRunId(runId)
+      useLayoutStore.getState().openRightPanel('ai-output')
+    }) : () => {}
 
     const unsubAutoOpenNextChapter = globalEventBus.on('FINALIZE_COMPLETE', ({
       chapterNumber,
@@ -203,6 +224,7 @@ export default function App() {
         disposeProjectService()
       }).catch(() => {})
       unsubActionToast()
+      unsubNotificationClick()
       unsubAutoOpenNextChapter()
     }
   }, [initLocale, initTheme, initLLM, loadRecentProjects])
