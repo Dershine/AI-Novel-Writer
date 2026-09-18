@@ -664,7 +664,9 @@ export interface TokenUsage {
 export interface ModelProfile {
   id: string
   name: string
-  provider: 'openai' | 'gemini' | 'deepseek' | 'ollama' | 'bigmodel' | 'novelai' | 'xai' | 'siliconflow' | 'custom'
+  provider: 'openai' | 'gemini' | 'deepseek' | 'ollama' | 'bigmodel' | 'novelai' | 'xai' | 'siliconflow' | 'custom' | 'codex'
+  /** Optional absolute native CLI path. Empty uses local installation discovery. */
+  codexExecutable?: string
   protocol: 'openai' | 'gemini'
   modelName: string
   apiKey: string

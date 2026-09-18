@@ -133,6 +133,16 @@ export function characterArchitecturePrompts(language: WritingLanguage): Charact
   return CHARACTER_ARCHITECTURE_PROMPTS[language]
 }
 
+/** Shared narration guidance for opening and continuation drafts. */
+const DRAFT_PROSE_GUIDANCE_EN = `[Narration and expression]
+1. Allocate space according to importance. Dramatize moments that change the situation, a character's judgment, or a relationship; summarize repetitive processes, routine travel, and established interactions. Do not pad the target length with empty actions, small talk, or repeated interiority.
+2. Allow direct narration, summary, interior judgment, and brief viewpoint-consistent commentary. Keep explanations that add causality, bias, irony, or a new understanding; remove explanations that merely restate the preceding action or dialogue. Do not replace necessary information with decorative sounds, drinking, or glances, or add unrelated philosophical conclusions at the ending.
+3. Let characters notice different things according to their knowledge, experience, and immediate needs. At important choices, make the basis of their judgment understandable. Distinguish what characters know from their guesses and wishes; confidence does not automatically make a judgment correct, and explicit author facts must not be downgraded to guesses.
+4. Let dialogue arise from what each character wants to obtain, conceal, refuse, or establish. Their relationship determines what they say directly and what they evade; not every line needs subtext. Do not make everyone equally witty, considerate, or complete in their answers. Give humor an intelligible basis rather than using an audience's laughter to certify a joke.
+5. Use action, setting, and sensory details to clarify circumstances, character, or atmosphere. Do not append a smile, nod, frown, or pause to every line of dialogue. A detail can serve several purposes without every description becoming foreshadowing.
+6. Organize paragraphs around complete thoughts and shifts of attention, varying their length naturally. Reserve short sentences and isolated paragraphs for emphasis instead of giving every sentence its own paragraph. Judge figurative language by accuracy and relevance; remove repetitive or ineffective imagery.
+7. Before output, check for redundant explanations, interchangeable character reactions, and stock phrases replacing concrete judgment. Revise the prose directly without outputting the checking process.`
+
 /**
  * Model-facing built-in prompt translations. UI copy is deliberately absent:
  * the project writing language, not the application locale, selects this map.
@@ -658,7 +668,7 @@ The runtime appends the authoritative immutable JSON contract. Follow that contr
 Output JSON only, with no Markdown, explanation, or reasoning.`,
   },
   first_chapter_draft: {
-    systemRole: 'You are an experienced fiction writer. Preserve author facts and advance causality through concrete scenes, action, sensory detail, and distinct dialogue. Never reveal reasoning or meta commentary.',
+    systemRole: 'You are an experienced fiction writer. Preserve author facts and narrative viewpoint. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story, establishing clear causality and reader interest. Never reveal reasoning or meta commentary.',
     content: `Write the opening chapter of this novel.
 
 [Story architecture]
@@ -675,9 +685,9 @@ Use these only to understand later turning points. Do not reveal or advance them
 {{global_guidance}}
 
 [Opening-chapter requirements]
-1. Begin inside an immediate action, confrontation, pursuit, or sharp reversal instead of explaining the world at length.
+1. Quickly establish a particular character's situation and a question, desire, incongruity, or relationship worth reading on for. Open with action, dialogue, a character's state, or brief setting as appropriate to the chapter. Do not invent danger for an intense opening or front-load worldbuilding before establishing reader interest.
 2. Introduce the protagonist's special advantage only when the chapter brief explicitly requires it; do not invent an event to satisfy a generic opening convention.
-3. Advance through viewpoint-consistent action, sensory detail, interiority, and dialogue. Do not turn private perception into public dialogue merely to expose information.
+3. Advance through viewpoint-consistent narration, action, sensory detail, interiority, and dialogue. Do not turn private perception into public dialogue merely to expose information.
 4. Follow the project-wide guidance and avoid every listed failure mode.
 
 [Writing style]
@@ -698,10 +708,11 @@ Use these only to understand later turning points. Do not reveal or advance them
 - Output plain manuscript prose only. Do not use Markdown, headings, analysis, plans, or screenplay formatting.
 - Separate every paragraph with one blank line. Use standard quotation marks consistently for dialogue.
 - If the target length cannot fit in one response, stop at a natural paragraph boundary without asking the user to continue.
-- Keep each character's voice distinct. Avoid paragraph-ending summaries, generic destiny metaphors, and unrelated philosophical conclusions.`,
+
+${DRAFT_PROSE_GUIDANCE_EN}`,
   },
   next_chapter_draft: {
-    systemRole: 'You are an experienced fiction writer. Maintain long-form continuity and advance this chapter through motivated choices, resistance, and consequences. Never reveal reasoning or meta commentary.',
+    systemRole: 'You are an experienced fiction writer. Preserve author facts, narrative viewpoint, and long-form continuity. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story and convey this chapter\'s causality and changes. Never reveal reasoning or meta commentary.',
     content: `You are serializing the latest chapter.
 
 [Story memory and previous stopping point]
@@ -721,8 +732,8 @@ Use these only to understand later turning points. Do not reveal or advance them
 {{filtered_context}}
 
 [Serialization requirements]
-1. [Story memory and previous stopping point] records completed history. [Chapter brief], [Upcoming chapter blueprints], and [Knowledge-base context] do not thereby become completed events. Begin after the previous chapter's final state and advance a new event from this chapter brief. Do not quote, summarize, replay, or restage any sentence, action, or image from the previous ending; also avoid teleporting the scene or abruptly changing viewpoint.
-2. Drive the scene through action, expression, sensory detail, and dialogue rather than detached summary.
+1. [Story memory and previous stopping point] records completed history. [Chapter brief], [Upcoming chapter blueprints], and [Knowledge-base context] do not thereby become completed events. Carry forward the established situation and develop new progress in this chapter. Briefly answer a question left by the previous chapter, orient necessary changes of time or place, or echo a detail with new meaning; do not restage completed events. When the chapter brief calls for a flashback, time jump, or viewpoint change, clearly establish the new time, place, and viewpoint.
+2. Choose dramatized scenes or concise summary according to the importance of the material. Clarify observation, judgment, and response at key moments; omit repetitive processes in transitions rather than piling up gestures, actions, and sounds to simulate movement.
 3. Use approximately {{word_number}} words to complete this chapter's conflict without filler.
 4. Use only the ending state or hook explicitly required by the chapter brief. When none is specified, end naturally without inventing an escalation, interruption, or later event.
 5. Follow the project-wide guidance: {{global_guidance}}
@@ -746,7 +757,8 @@ Use these only to understand later turning points. Do not reveal or advance them
 - Output plain manuscript prose only, without headings, Markdown, analysis, plans, or screenplay formatting.
 - Separate every paragraph with one blank line and use quotation marks consistently for dialogue.
 - If the target length cannot fit in one response, stop at a natural paragraph boundary without asking the user to continue.
-- Keep character voices distinct and avoid generic paragraph summaries, destiny metaphors, or unrelated philosophical conclusions.`,
+
+${DRAFT_PROSE_GUIDANCE_EN}`,
   },
 } satisfies Record<CoreLocalizedBuiltinPromptKey, PromptLanguageTemplate> & Record<string, PromptLanguageTemplate>)
 

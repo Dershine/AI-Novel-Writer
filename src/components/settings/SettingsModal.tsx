@@ -555,9 +555,10 @@ function ModelForm({
     onChange({
       ...model,
       provider,
+      ...(provider === 'codex' ? { apiKey: '', purposes: ['generation', 'refinement', 'summary'] as ModelProfile['purposes'] } : {}),
       protocol: (p?.protocol ?? 'openai') as 'openai' | 'gemini',
       baseUrl: p?.baseUrl ?? '',
-      modelName: defaultModelName,
+      modelName: provider === 'codex' ? 'default' : defaultModelName,
       maxTokens: capabilities?.maxOutputTokens ?? firstModel?.maxTokens ?? 4096,
       capabilities: capabilities ? { ...capabilities } : undefined,
     })
@@ -674,6 +675,7 @@ function ModelForm({
             onChange={(e) => handleProviderChange(e.target.value as ModelProfile['provider'])}
           >
             <option value="openai">OpenAI</option>
+            {!isEmbedding && <option value="codex">Codex CLI</option>}
             <option value="novelai">NovelAI</option>
             <option value="deepseek">DeepSeek</option>
             <option value="gemini">Google Gemini</option>
@@ -688,6 +690,7 @@ function ModelForm({
           <Label>{text('调用协议', 'Protocol')}</Label>
           <NativeSelect
             value={model.protocol}
+            disabled={model.provider === 'codex'}
             onChange={(e) => up('protocol', e.target.value as 'openai' | 'gemini')}
           >
             <option value="openai">OpenAI</option>
@@ -752,7 +755,18 @@ function ModelForm({
         )}
       </div>
 
+      {model.provider === 'codex' && (
+        <div className="space-y-2">
+          <p className="text-xs text-[var(--color-text-muted)]">
+            {text('使用本机 codex login 的账号，无需 API Key。default 使用 Codex 默认模型，也可填写账号可用的模型 ID。生成完成后一次显示结果；不支持向量模型。', 'Uses your local codex login, without an API key. Use default or an available model ID. Results appear when generation completes; embeddings are not supported.')}
+          </p>
+          <Label>{text('Codex 可执行文件（可选）', 'Codex executable (optional)')}</Label>
+          <Input value={model.codexExecutable ?? ''} onChange={e => up('codexExecutable', e.target.value)} placeholder={text('留空自动查找；Windows 填写 codex.exe 完整路径', 'Auto-detect, or enter the full path to codex.exe on Windows')} />
+          <p className="text-xs text-[var(--color-text-muted)]">{text('温度、输出 Token 上限及项目推理策略不传给 CLI；采用 Codex 默认行为。每次请求独立，不读取个人 Codex 配置。', 'Temperature, output token limits and project reasoning settings are not passed to the CLI. Each request is independent and uses Codex defaults without personal configuration.')}</p>
+        </div>
+      )}
       {/* Base URL */}
+      {model.provider !== 'codex' && <>
       <div>
         <Label>{text('base_url', 'base_url')}</Label>
         <Input
@@ -829,6 +843,7 @@ function ModelForm({
         )}
       </div>
 
+      </>}
       {isEmbedding && model.provider === 'siliconflow' && model.modelName === 'BAAI/bge-m3' && (
         <div className="rounded-lg p-3 space-y-2" style={{ border: '1px solid var(--color-border)', backgroundColor: 'var(--color-hover)' }}>
           <p className="text-xs" style={{ color: 'var(--color-text-secondary)' }}>
@@ -860,11 +875,11 @@ function ModelForm({
         />
       </div>
 
-      {!isEmbedding && (
+      {!isEmbedding && model.provider !== 'codex' && (
         <ProjectCreativeStrategySettings />
       )}
 
-      {!isEmbedding && (
+      {!isEmbedding && model.provider !== 'codex' && (
         <div className="rounded-lg border border-[var(--color-border)]" data-model-advanced-settings>
           <button
             type="button"
@@ -986,7 +1001,7 @@ function ModelForm({
         <Button
           variant="outline"
           onClick={handleTest}
-          disabled={testing || !model.baseUrl || (!model.apiKey && model.provider !== 'ollama')}
+          disabled={testing || (model.provider !== 'codex' && (!model.baseUrl || (!model.apiKey && model.provider !== 'ollama')))}
         >
           <Zap size={13} />
           {testing ? text('测试中...', 'Testing...') : text('测试连接', 'Test connection')}
@@ -994,7 +1009,7 @@ function ModelForm({
         <Button
           className="flex-1"
           onClick={onSave}
-          disabled={saving || !model.baseUrl.trim() || !model.modelName.trim() || (!model.apiKey.trim() && model.provider !== 'ollama')}
+          disabled={saving || !model.modelName.trim() || (model.provider !== 'codex' && (!model.baseUrl.trim() || (!model.apiKey.trim() && model.provider !== 'ollama')))}
         >
           <Save size={13} />
           {saving ? text('保存中...', 'Saving...') : text('保存配置', 'Save configuration')}
