@@ -42,10 +42,14 @@ describe('reference style imitation prompt contract', () => {
 
       expect(zhCN?.systemSuffix).toContain('文风仅用于选择表达方式')
       expect(zhCN?.systemSuffix).toContain('作者明确事实与指导、实际前文、本章关键因果和本章篇幅优先')
-      expect(zhCN?.systemSuffix).toContain('不得把作者明确事实或要求降格为推测')
+      expect(zhCN?.systemSuffix).toContain(key === 'refine_chapter'
+        ? '不得把作者明确事实或要求降格为推测'
+        : '作者明确事实或要求保持确定性')
       expect(enUS?.systemSuffix).toContain('Writing style selects expression only')
       expect(enUS?.systemSuffix).toContain('actual prior prose')
-      expect(enUS?.systemSuffix).toContain('relabel explicit author facts or requirements as guesses')
+      expect(enUS?.systemSuffix).toContain(key === 'refine_chapter'
+        ? 'relabel explicit author facts or requirements as guesses'
+        : 'Preserve explicit author facts and requirements as certain')
     },
   )
 })

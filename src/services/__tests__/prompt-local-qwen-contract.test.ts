@@ -275,13 +275,13 @@ describe('built-in model-neutral prompt contract', () => {
 
   it('keeps drafting prompts focused on the existing chapter workflow', () => {
     const firstChapter = compact(promptText('first_chapter_draft'))
-    expect(firstChapter).toContain('本章仅推演')
-    expect(firstChapter).toContain('纯文本正文')
+    expect(firstChapter).toContain('事件范围限定为【本章信息】规定的核心剧情')
+    expect(firstChapter).toContain('纯文本小说正文')
     expect(firstChapter).toContain('段落之间必须保留一个空行')
 
     const nextChapter = compact(promptText('next_chapter_draft'))
     expect(nextChapter).toContain('本章核心冲突')
-    expect(nextChapter).toContain('绝不可擅自拓展后续大纲的情节')
+    expect(nextChapter).toContain('后续大纲的情节保留在对应章节展开')
     expect(nextChapter).toContain('文风要求')
 
     const refineChapter = compact(promptText('refine_chapter'))
@@ -480,7 +480,7 @@ describe('built-in model-neutral prompt contract', () => {
     for (const label of optionalGuidanceLabels) {
       expect(rendered).not.toContain(label)
     }
-    expect(rendered).toContain('【具体生成要求】')
+    expect(rendered).toContain('【交付要求】')
   })
 
   it('keeps PromptBuilder pruning aligned with renderPrompt', () => {
@@ -501,6 +501,6 @@ describe('built-in model-neutral prompt contract', () => {
     for (const label of optionalGuidanceLabels) {
       expect(rendered).not.toContain(label)
     }
-    expect(rendered).toContain('【具体生成要求】')
+    expect(rendered).toContain('【交付要求】')
   })
 })

@@ -164,22 +164,22 @@ describe('built-in author-guidance prompt boundaries', () => {
     const enFirst = EN_US_BUILTIN_PROMPTS.first_chapter_draft
     const enNext = EN_US_BUILTIN_PROMPTS.next_chapter_draft
 
-    expect(`${zhFirst?.content}\n${zhFirst?.systemSuffix}`).toContain('仅当【本章信息】明确要求时才展现主角的金手指')
-    expect(zhFirst?.content).toContain('不得仅为展示信息而让角色公开说出只由其私下感知、尚未转述的内容')
+    expect(`${zhFirst?.content}\n${zhFirst?.systemSuffix}`).toContain('主角金手指的展示以【本章信息】的明确要求为触发条件')
+    expect(zhFirst?.content).toContain('私人感知通过该人物的心理或视角叙述呈现，其他人物依据自己实际获知的信息回应')
     expect(zhFirst?.content).not.toContain('全部改成"角色对话 + 神态描写 + 动作互动"')
     expect(zhFirst?.content).toContain('{{chapter_info}}')
     expect(zhFirst?.content).toContain('{{global_guidance}}')
     expect(zhFirst?.systemSuffix).toContain('{{user_guidance}}')
     expect(`${zhFirst?.content}\n${zhFirst?.systemSuffix}`).not.toContain('留置一个强力钩子')
-    expect(`${zhNext?.content}\n${zhNext?.systemSuffix}`).toContain('不因此成为已发生事件')
+    expect(`${zhNext?.content}\n${zhNext?.systemSuffix}`).toContain('事件是否已经发生，以实际前文为依据')
     expect(`${zhNext?.content}\n${zhNext?.systemSuffix}`).not.toContain('上述事件已经发生完毕')
     expect(`${zhNext?.content}\n${zhNext?.systemSuffix}`).not.toContain('必须卡在一个剧情的小高潮点或突发变故上')
     expect(`${enFirst.content}\n${enFirst.systemSuffix}`).toContain('only when the chapter brief explicitly requires it')
-    expect(enFirst.content).toContain('Do not turn private perception into public dialogue merely to expose information')
+    expect(enFirst.content).toContain('Present private perceptions through that character\'s interiority or viewpoint narration; other characters respond using information they have actually received')
     expect(enFirst.content).toContain('{{chapter_info}}')
     expect(enFirst.content).toContain('{{global_guidance}}')
     expect(enFirst.systemSuffix).toContain('{{user_guidance}}')
-    expect(`${enNext.content}\n${enNext.systemSuffix}`).toContain('do not thereby become completed events')
+    expect(`${enNext.content}\n${enNext.systemSuffix}`).toContain('Use actual prior prose to determine whether an event has already occurred')
     expect(`${enNext.content}\n${enNext.systemSuffix}`).not.toContain('Those events have already happened')
   })
 })
@@ -1453,12 +1453,12 @@ describe('GenerateDraftCommand generation runtime boundary', () => {
   })
 
   it.each([
-    { writingLanguage: 'zh-CN' as const, completedBoundary: '记录的是已发生历史', forbiddenReplay: '不得引用、摘要、回放或重演' },
-    { writingLanguage: 'en-US' as const, completedBoundary: 'records completed history', forbiddenReplay: 'Do not quote, summarize, replay, or restage' },
+    { writingLanguage: 'zh-CN' as const, completedBoundary: '提供已发生历史', forwardDevelopment: '从前文已经形成的局面出发，承接留下的问题、情绪和关系影响，展开本章的新进展' },
+    { writingLanguage: 'en-US' as const, completedBoundary: 'supplies completed history', forwardDevelopment: 'Start from the established situation and carry forward unresolved questions, emotions, and relational effects into new developments' },
   ])('marks previous prose as completed history in $writingLanguage', async ({
     writingLanguage,
     completedBoundary,
-    forbiddenReplay,
+    forwardDevelopment,
   }) => {
     let observedTask: GenerationTask | undefined
     const runtime = fakeRuntime((_attempt, task) => {
@@ -1481,7 +1481,7 @@ describe('GenerateDraftCommand generation runtime boundary', () => {
 
     const prompt = observedTask?.messages.find(message => message.role === 'user')?.content ?? ''
     expect(prompt).toContain(completedBoundary)
-    expect(prompt).toContain(forbiddenReplay)
+    expect(prompt).toContain(forwardDevelopment)
   })
 
   it('keeps workflow metadata out of both initial and continuation writer chapter briefs', async () => {

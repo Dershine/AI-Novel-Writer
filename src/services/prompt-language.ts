@@ -134,14 +134,16 @@ export function characterArchitecturePrompts(language: WritingLanguage): Charact
 }
 
 /** Shared narration guidance for opening and continuation drafts. */
-const DRAFT_PROSE_GUIDANCE_EN = `[Narration and expression]
-1. Allocate space according to importance. Dramatize moments that change the situation, a character's judgment, or a relationship; summarize repetitive processes, routine travel, and established interactions. Do not pad the target length with empty actions, small talk, or repeated interiority.
-2. Allow direct narration, summary, interior judgment, and brief viewpoint-consistent commentary. Keep explanations that add causality, bias, irony, or a new understanding; remove explanations that merely restate the preceding action or dialogue. Do not replace necessary information with decorative sounds, drinking, or glances, or add unrelated philosophical conclusions at the ending.
-3. Let characters notice different things according to their knowledge, experience, and immediate needs. At important choices, make the basis of their judgment understandable. Distinguish what characters know from their guesses and wishes; confidence does not automatically make a judgment correct, and explicit author facts must not be downgraded to guesses.
-4. Let dialogue arise from what each character wants to obtain, conceal, refuse, or establish. Their relationship determines what they say directly and what they evade; not every line needs subtext. Do not make everyone equally witty, considerate, or complete in their answers. Give humor an intelligible basis rather than using an audience's laughter to certify a joke.
-5. Use action, setting, and sensory details to clarify circumstances, character, or atmosphere. Do not append a smile, nod, frown, or pause to every line of dialogue. A detail can serve several purposes without every description becoming foreshadowing.
-6. Organize paragraphs around complete thoughts and shifts of attention, varying their length naturally. Reserve short sentences and isolated paragraphs for emphasis instead of giving every sentence its own paragraph. Judge figurative language by accuracy and relevance; remove repetitive or ineffective imagery.
-7. Before output, check for redundant explanations, interchangeable character reactions, and stock phrases replacing concrete judgment. Revise the prose directly without outputting the checking process.`
+const DRAFT_PROSE_GUIDANCE_EN = `[Manuscript craft]
+Write the story as characters experience it, making both causality and its personal significance tangible. Apply these principles as the scene calls for them, prioritizing this chapter's most important changes.
+
+1. Character and narration: Organize narration around the current viewpoint character's attention. Knowledge, experience, desires, preferences, and emotions shape what they notice first, how they name things, and how they understand other people. Choose the form of interiority that fits the moment: an immediate thought, association, emotional judgment, deliberation, or sustained reasoning. Let readers encounter reactions as they form, leaving room for characters to understand themselves differently later.
+2. Scenes and emphasis: Give space to the chapter's most significant changes: an overturned expectation, a decision finally made, a relationship acquiring new meaning, or an action producing a tangible result. Dramatize the change and the character's experience of it. Connect routine processes through summary and develop important details in scenes. Each expansion should add a new experience, understanding, or expectation.
+3. Dialogue and response: Write from each speaker's immediate purpose: what they want, how they hope to be seen, and how much they choose to reveal. Let listeners respond according to their own concerns. Familiarity, distance, status, and differences in knowledge shape how each person understands the same words and which part they answer. Convey both content and relationship through who can press a question, who owes an explanation, who jokes, and who feels the weight of a remark.
+4. Explanation and implication: Supply necessary information where readers need it to understand causality. Prefer explanations that add evidence, a personal stance, or a new interpretation. Leave established implications of action and dialogue for readers to absorb, then move into fresh reactions and developments. Preserve the personal stance in self-explanations; ground interpretations of other people in observation and viewpoint judgment.
+5. Detail and everyday life: Select sounds, objects, physical sensations, and habits that matter to the character now. Show setting and personality through how people use, handle, cherish, or dislike these things. Develop procedural and technical detail to the extent needed by the current causality. Reveal competence through solving a concrete problem and its effects.
+6. Language and rhythm: Choose flowing narration, direct interiority, sustained dialogue, concise summary, or close description to suit the scene. Vary sentence and paragraph length with attention, emotion, and the pace of action. Ground humor in differences of understanding and personality, warmth in specific care, and tension in choices, waiting, and consequences. Give each feeling its appropriate verbal force.
+7. Closure and completion: Carry forward the scene's emotional and relational effects toward the chapter's specified ending state. Close on the line, action, judgment, or image that best carries its meaning. Check that key changes receive enough space, major characters respond distinctly, explanations add understanding, and rhythm suits the scene. Deliver the finished manuscript directly.`
 
 /**
  * Model-facing built-in prompt translations. UI copy is deliberately absent:
@@ -668,7 +670,7 @@ The runtime appends the authoritative immutable JSON contract. Follow that contr
 Output JSON only, with no Markdown, explanation, or reasoning.`,
   },
   first_chapter_draft: {
-    systemRole: 'You are an experienced fiction writer. Preserve author facts and narrative viewpoint. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story, establishing clear causality and reader interest. Never reveal reasoning or meta commentary.',
+    systemRole: 'You are an experienced fiction writer. Preserve author facts and narrative viewpoint. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story, establishing clear causality and reader interest. Deliver manuscript prose directly.',
     content: `Write the opening chapter of this novel.
 
 [Story architecture]
@@ -678,85 +680,88 @@ Output JSON only, with no Markdown, explanation, or reasoning.`,
 {{chapter_info}}
 
 [Upcoming chapter blueprints]
-Use these only to understand later turning points. Do not reveal or advance them in this chapter.
+Use these to understand future developments; reserve their events for the corresponding chapters.
 {{future_blueprints}}
 
 [Project-wide writing guidance]
 {{global_guidance}}
 
 [Opening-chapter requirements]
-1. Quickly establish a particular character's situation and a question, desire, incongruity, or relationship worth reading on for. Open with action, dialogue, a character's state, or brief setting as appropriate to the chapter. Do not invent danger for an intense opening or front-load worldbuilding before establishing reader interest.
-2. Introduce the protagonist's special advantage only when the chapter brief explicitly requires it; do not invent an event to satisfy a generic opening convention.
-3. Advance through viewpoint-consistent narration, action, sensory detail, interiority, and dialogue. Do not turn private perception into public dialogue merely to expose information.
-4. Follow the project-wide guidance and avoid every listed failure mode.
+1. Choose an entry point from the chapter's established events and quickly establish a particular character's situation and a question, desire, incongruity, or relationship worth reading on for. Establish the protagonist's way of seeing through their choices and reactions. Introduce world context as needed to understand the immediate situation.
+2. Introduce the protagonist's special advantage only when the chapter brief explicitly requires it. Ground chapter events and entrances in the author's blueprint.
+3. Advance through viewpoint-consistent narration, action, sensory detail, interiority, and dialogue. Present private perceptions through that character's interiority or viewpoint narration; other characters respond using information they have actually received.
+4. Apply project-wide guidance through the chapter's narrative choices and characterization.
 
 [Writing style]
 {{writing_style}}`,
-    systemSuffix: `[Authoritative facts that must not drift]
+    systemSuffix: `[Authoritative story facts]
 - Author-confirmed novel configuration: {{novel_config}}
-- Treat both as immutable facts. Never omit, weaken, reverse, or replace an explicit author setting with a genre convention; if a fact is not foregrounded in this chapter, do not contradict it.
+- These settings and explicit author guidance establish story truth. Preserve the full meaning and certainty of explicit facts. Accurately realize facts relevant to this chapter and maintain consistency with facts reserved for later development.
 
 [Writing-style applicability]
-- Writing style selects expression only; it adds no facts or events, and not every item must be forced into the manuscript.
-- Explicit author facts and guidance, actual prior prose, the chapter's key causality, and its target length take priority. Do not use style guidance to rewrite them, relabel explicit author facts or requirements as guesses, or add scenes, actions, or events merely to satisfy style guidance.
+- Writing style selects expression only; choose techniques according to the scene's needs.
+- Explicit author facts and guidance, actual prior prose, the chapter's key causality, and its target length take priority. Fully realize the required events, causality, relationship stage, and ending state. Preserve explicit author facts and requirements as certain; reserve later events for their corresponding chapters.
+- Within these boundaries, freely arrange narration, dialogue, interiority, detail, and emphasis. Ground candor, concealment, defiance, evasion, and misinterpretation in established personality and circumstances. Preserve the personal stance of self-explanations and convey facts naturally through the prose.
 
 [Author guidance for this step — highest priority when present]
 {{user_guidance}}
 
 [Output contract]
-- Write approximately {{word_number}} words and cover only the chapter brief. End at the state or hook specified there; when none is specified, end naturally without advancing later blueprints or adding filler.
-- Output plain manuscript prose only. Do not use Markdown, headings, analysis, plans, or screenplay formatting.
-- Separate every paragraph with one blank line. Use standard quotation marks consistently for dialogue.
-- If the target length cannot fit in one response, stop at a natural paragraph boundary without asking the user to continue.
+- Aim for approximately {{word_number}} words, allocating space to fully develop the key events. Limit the event scope to the chapter brief.
+- Reach the ending state or hook specified in the brief. When the author leaves the ending open, choose a natural closing point within the chapter's established events.
+- Output plain manuscript prose only, opening directly with the story. Integrate dialogue into narration and use standard quotation marks consistently.
+- Separate every paragraph with one blank line.
+- If output length is limited, end at a complete paragraph boundary.
 
 ${DRAFT_PROSE_GUIDANCE_EN}`,
   },
   next_chapter_draft: {
-    systemRole: 'You are an experienced fiction writer. Preserve author facts, narrative viewpoint, and long-form continuity. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story and convey this chapter\'s causality and changes. Never reveal reasoning or meta commentary.',
+    systemRole: 'You are an experienced fiction writer. Preserve author facts, narrative viewpoint, and long-form continuity. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story and convey this chapter\'s causality and changes. Deliver manuscript prose directly.',
     content: `You are serializing the latest chapter.
 
 [Story memory and previous stopping point]
 - Overall progress: {{global_summary}}
 - Character states: {{character_states}}
 - Recent chapters: {{short_summary}}
-- Completed ending state of the previous chapter — boundary context only: {{previous_ending}}
+- Completed ending state of the previous chapter — starting point for continuation: {{previous_ending}}
 
 [Chapter brief]
 {{chapter_info}}
 
 [Upcoming chapter blueprints]
-Use these only to understand later turning points. Do not reveal or advance them in this chapter.
+Use these to understand future developments; reserve their events for the corresponding chapters.
 {{future_blueprints}}
 
 [Knowledge-base context]
 {{filtered_context}}
 
 [Serialization requirements]
-1. [Story memory and previous stopping point] records completed history. [Chapter brief], [Upcoming chapter blueprints], and [Knowledge-base context] do not thereby become completed events. Carry forward the established situation and develop new progress in this chapter. Briefly answer a question left by the previous chapter, orient necessary changes of time or place, or echo a detail with new meaning; do not restage completed events. When the chapter brief calls for a flashback, time jump, or viewpoint change, clearly establish the new time, place, and viewpoint.
-2. Choose dramatized scenes or concise summary according to the importance of the material. Clarify observation, judgment, and response at key moments; omit repetitive processes in transitions rather than piling up gestures, actions, and sounds to simulate movement.
-3. Use approximately {{word_number}} words to complete this chapter's conflict without filler.
-4. Use only the ending state or hook explicitly required by the chapter brief. When none is specified, end naturally without inventing an escalation, interruption, or later event.
+1. Context roles: [Story memory and previous stopping point] supplies completed history; [Chapter brief] specifies events to develop now; [Upcoming chapter blueprints] supplies future plans; use [Knowledge-base context] according to the material's actual timing and nature. Use actual prior prose to determine whether an event has already occurred.
+2. Forward development: Start from the established situation and carry forward unresolved questions, emotions, and relational effects into new developments. When similar interactions recur, convey what has changed in their circumstances or meaning. Connect necessary history through brief recollection. When the blueprint calls for a flashback, time jump, or viewpoint change, clearly establish the new time, place, and observing character.
+3. Use approximately {{word_number}} words to fully realize this chapter's objective and key changes, choosing dramatization or summary according to their importance.
+4. Reach the ending state or hook specified in the chapter brief. When the author leaves the ending open, close naturally within the chapter's established events.
 5. Follow the project-wide guidance: {{global_guidance}}
 
 [Writing style]
 {{writing_style}}`,
-    systemSuffix: `[Authoritative facts that must not drift]
+    systemSuffix: `[Authoritative story facts]
 - Story architecture: {{architecture}}
 - Author-confirmed novel configuration: {{novel_config}}
-- Treat both as immutable facts. Never omit, weaken, reverse, or replace an explicit author setting with a genre convention; if a fact is not foregrounded in this chapter, do not contradict it.
+- These settings and explicit author guidance establish story truth. Preserve the full meaning and certainty of explicit facts. Accurately realize facts relevant to this chapter and maintain consistency with facts reserved for later development.
 
 [Writing-style applicability]
-- Writing style selects expression only; it adds no facts or events, and not every item must be forced into the manuscript.
-- Explicit author facts and guidance, actual prior prose, the chapter's key causality, and its target length take priority. Do not use style guidance to rewrite them, relabel explicit author facts or requirements as guesses, or add scenes, actions, or events merely to satisfy style guidance.
+- Writing style selects expression only; choose techniques according to the scene's needs.
+- Explicit author facts and guidance, actual prior prose, the chapter's key causality, and its target length take priority. Fully realize the required events, causality, relationship stage, and ending state. Preserve explicit author facts and requirements as certain; reserve later events for their corresponding chapters.
+- Within these boundaries, freely arrange narration, dialogue, interiority, detail, and emphasis. Ground candor, concealment, defiance, evasion, and misinterpretation in established personality and circumstances. Preserve the personal stance of self-explanations and convey facts naturally through the prose.
 
 [Author guidance for this step — highest priority when present]
 {{user_guidance}}
 
 [Output contract]
-- Cover only the chapter brief and stop once its conflict is complete. Do not advance later blueprints.
-- Output plain manuscript prose only, without headings, Markdown, analysis, plans, or screenplay formatting.
-- Separate every paragraph with one blank line and use quotation marks consistently for dialogue.
-- If the target length cannot fit in one response, stop at a natural paragraph boundary without asking the user to continue.
+- Aim for approximately {{word_number}} words, allocating space to fully develop the key events. Limit the event scope to the chapter brief; reserve later blueprint events for their corresponding chapters.
+- Output plain manuscript prose only, opening directly with the story. Integrate dialogue into narration and use standard quotation marks consistently.
+- Separate every paragraph with one blank line.
+- If output length is limited, end at a complete paragraph boundary.
 
 ${DRAFT_PROSE_GUIDANCE_EN}`,
   },
