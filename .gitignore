@@ -65,3 +65,6 @@ tailwind.config.js.bak
 /public/screenshot/
 /public/logos/
 *.tsbuildinfo
+
+# Local shortcut for launching an existing build
+/start-source.cmd
