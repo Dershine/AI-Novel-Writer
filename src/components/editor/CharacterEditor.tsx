@@ -51,6 +51,11 @@ export default function CharacterEditor({ projectKey }: { projectKey: string }) 
   const [viewMode, setViewMode] = useState<'edit' | 'state' | 'graph'>('edit')
   const text = useLocaleStore(s => s.text)
   const locale = useLocaleStore(s => s.locale)
+  const [relationshipDraft, setRelationshipDraft] = useState<{
+    contextKey: string
+    storage: string
+    value: string
+  } | null>(null)
   const roleLabel = (role: CharacterCard['role']) => {
     const { zhCN, enUS } = getCharacterRoleLabels(role)
     return text(zhCN, enUS)
@@ -68,8 +73,12 @@ export default function CharacterEditor({ projectKey }: { projectKey: string }) 
   const selectedCard = dataReady
     ? characters.find((c) => c.name === selectedName) || null
     : null
+  const relationshipContextKey = JSON.stringify([projectKey, currentProject?.id, currentProject?.sessionLease, selectedName, locale])
   const relationshipEditorText = selectedCard
-    ? formatRelationshipsForEditor(selectedCard.relationships, { locale })
+    ? relationshipDraft?.contextKey === relationshipContextKey
+      && relationshipDraft.storage === selectedCard.relationships
+      ? relationshipDraft.value
+      : formatRelationshipsForEditor(selectedCard.relationships, { locale })
     : ''
 
   const handleDelete = async () => {
@@ -341,15 +350,18 @@ export default function CharacterEditor({ projectKey }: { projectKey: string }) 
                 <Label>{text('关系网', 'Relationships')}</Label>
                 <Textarea
                   value={relationshipEditorText}
-                  onChange={(e) => updateCurrentField(
-                    selectedCard.name,
-                    'relationships',
-                    relationshipStorageFromEditor(e.target.value, {
+                  onChange={(e) => {
+                    const value = e.target.value
+                    const storage = relationshipStorageFromEditor(value, {
                       knownNames: characters.map((character) => character.name),
                       selfName: selectedCard.name,
                       previousStorage: selectedCard.relationships,
-                    }),
-                  )}
+                    })
+                    // Canonical storage trims whitespace; never feed that normalization
+                    // back into an active edit, where a newline starts the next relation.
+                    setRelationshipDraft({ contextKey: relationshipContextKey, storage, value })
+                    updateCurrentField(selectedCard.name, 'relationships', storage)
+                  }}
                   rows={3}
                   placeholder={text(
                     '每行一位角色，例如：陆云飞：竞争对手（权力斗争）',

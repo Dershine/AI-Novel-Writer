@@ -7,12 +7,14 @@ import type { ProjectData } from '../../../shared/ipc-channels'
 import { useCharacterStore, type CharacterCard } from '../../../stores/character-store'
 import { useLocaleStore } from '../../../stores/locale-store'
 import { useProjectStore } from '../../../stores/project-store'
+import { useEditorStore } from '../../../stores/editor-store'
 import CharacterEditor from '../CharacterEditor'
 
 const PROJECT_PATH = 'C:\\novels\\relationship-editor'
 const originalCharacterState = useCharacterStore.getState()
 const originalLocaleState = useLocaleStore.getState()
 const originalProjectState = useProjectStore.getState()
+const originalEditorState = useEditorStore.getState()
 
 ;(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true
 
@@ -63,6 +65,7 @@ function character(name: string, relationships = ''): CharacterCard {
 }
 
 beforeEach(() => {
+  useEditorStore.setState({ ...originalEditorState, draftLedgers: {} })
   useCharacterStore.setState(originalCharacterState)
   useLocaleStore.setState(originalLocaleState)
   useProjectStore.setState(originalProjectState)
@@ -101,12 +104,52 @@ afterEach(async () => {
   container?.remove()
   root = undefined
   container = undefined
+  useEditorStore.setState(originalEditorState)
   useCharacterStore.setState(originalCharacterState)
   useLocaleStore.setState(originalLocaleState)
   useProjectStore.setState(originalProjectState)
 })
 
 describe('CharacterEditor relationship field', () => {
+  it.each(['\n', ' '])('keeps a typed trailing %j in relationships', async (suffix) => {
+    await act(async () => {
+      root?.render(<CharacterEditor projectKey={PROJECT_PATH} />)
+    })
+    const field = page.getByPlaceholder('每行一位角色，例如：陆云飞：竞争对手（权力斗争）')
+    const value = `陆云飞：竞争对手${suffix}`
+    await act(async () => field.fill(value))
+    await expect.element(field).toHaveValue(value)
+    expect(JSON.parse(useCharacterStore.getState().characters[0].relationships)).toEqual([
+      { target: '陆云飞', relation: '竞争对手' },
+    ])
+    await act(async () => field.fill(`${value}陆云飞：朋友`))
+    await expect.element(field).toHaveValue(`${value}陆云飞：朋友`)
+  })
+
+  it('refreshes relationships when selection or stored content changes', async () => {
+    await act(async () => {
+      root?.render(<CharacterEditor projectKey={PROJECT_PATH} />)
+    })
+    const field = page.getByPlaceholder('每行一位角色，例如：陆云飞：竞争对手（权力斗争）')
+    await act(async () => field.fill('陆云飞：朋友\n'))
+    await act(async () => useCharacterStore.setState({ selectedName: '陆云飞' }))
+    await expect.element(field).toHaveValue('')
+    await act(async () => {
+      useCharacterStore.setState({ selectedName: '沈砺' })
+      useCharacterStore.getState().updateField('沈砺', 'relationships', '[{"target":"陆云飞","relation":"兄弟"}]')
+    })
+    await expect.element(field).toHaveValue('陆云飞：兄弟')
+  })
+
+  it('allows editing ordinary profile text', async () => {
+    await act(async () => {
+      root?.render(<CharacterEditor projectKey={PROJECT_PATH} />)
+    })
+    const field = page.getByPlaceholder('输入外貌描写...')
+    await act(async () => field.fill('黑色长发\n戴着眼镜'))
+    await expect.element(field).toHaveValue('黑色长发\n戴着眼镜')
+  })
+
   it('renders persisted structured relationships as prose rather than raw JSON', async () => {
     await act(async () => {
       root?.render(<CharacterEditor projectKey={PROJECT_PATH} />)
