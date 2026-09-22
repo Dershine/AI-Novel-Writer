@@ -674,9 +674,11 @@ export interface TokenUsage {
 export interface ModelProfile {
   id: string
   name: string
-  provider: 'openai' | 'gemini' | 'deepseek' | 'ollama' | 'bigmodel' | 'novelai' | 'xai' | 'siliconflow' | 'custom' | 'codex'
+  provider: 'openai' | 'gemini' | 'deepseek' | 'ollama' | 'bigmodel' | 'novelai' | 'xai' | 'siliconflow' | 'custom' | 'codex' | 'claude-code'
   /** Optional absolute native CLI path. Empty uses local installation discovery. */
   codexExecutable?: string
+  /** Native Claude Code executable; blank uses PATH and the standard install location. */
+  claudeExecutable?: string
   protocol: 'openai' | 'gemini'
   modelName: string
   apiKey: string

@@ -268,8 +268,8 @@ export function registerLLMController() {
 
   ipcMain.handle('llm:save-model', async (_event, model: ModelProfile) => {
     try {
-      if (model.provider === 'codex') {
-        if (model.purposes.includes('embedding')) throw new Error('Codex CLI 不支持向量模型')
+      if (model.provider === 'codex' || model.provider === 'claude-code') {
+        if (model.purposes.includes('embedding')) throw new Error('CLI 不支持向量模型')
         model = { ...model, apiKey: '', baseUrl: '', protocol: 'openai' }
       }
       const models = loadModelConfigsForUpdate()

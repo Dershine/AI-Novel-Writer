@@ -12,6 +12,7 @@ import { NativeSelect } from '../ui/NativeSelect'
 import { cn } from '../../lib/utils'
 import { useLocaleStore } from '../../stores/locale-store'
 import ReasoningPolicySettings from './ReasoningPolicySettings'
+import { ClaudeCodeSettings } from './ClaudeCodeSettings'
 
 /** 模型设置面板 — 在侧边栏 settings 视图中展示 */
 export default function ModelSettings() {
@@ -149,8 +150,13 @@ function ModelForm({
   const [testResult, setTestResult] = useState<{ success: boolean, error?: string } | null>(null)
 
   const update = <K extends keyof ModelProfile>(key: K, value: ModelProfile[K]) => {
+    if (key === 'provider' && value === 'claude-code') {
+      onChange({ ...model, provider: 'claude-code', protocol: 'openai', modelName: 'default', baseUrl: '', apiKey: '', capabilities: undefined, reasoningOverride: 'auto' })
+      return
+    }
     onChange({ ...model, [key]: value })
   }
+  const isClaudeCode = model.provider === 'claude-code'
 
   const currentCapabilities: ModelCapabilities = {
     contextWindowTokens: model.capabilities?.contextWindowTokens ?? null,
@@ -186,6 +192,7 @@ function ModelForm({
           <Label>{text('服务商', 'Provider')}</Label>
           <NativeSelect value={model.provider} onChange={(e) => update('provider', e.target.value as ModelProfile['provider'])}>
             <option value="openai">OpenAI</option>
+            {!model.purposes.includes('embedding') && <option value="claude-code">Claude Code CLI</option>}
             <option value="deepseek">DeepSeek</option>
             <option value="gemini">Gemini</option>
             <option value="xai">xAI(Grok)</option>
@@ -196,8 +203,8 @@ function ModelForm({
         </div>
         <div>
           <Label>{text('协议', 'Protocol')}</Label>
-          <NativeSelect value={model.protocol} onChange={(e) => update('protocol', e.target.value as ModelProfile['protocol'])}>
-            <option value="openai">{text('OpenAI 兼容', 'OpenAI compatible')}</option>
+          <NativeSelect disabled={isClaudeCode} value={model.protocol} onChange={(e) => update('protocol', e.target.value as ModelProfile['protocol'])}>
+            <option value="openai">{isClaudeCode ? 'Claude Code CLI' : text('OpenAI 兼容', 'OpenAI compatible')}</option>
             <option value="gemini">Gemini</option>
           </NativeSelect>
         </div>
@@ -207,6 +214,8 @@ function ModelForm({
         <Label>{text('model（模型名称）', 'model')}</Label>
         <Input value={model.modelName} onChange={(e) => update('modelName', e.target.value)} placeholder="gpt-4o / deepseek-chat" />
       </div>
+      {isClaudeCode && <ClaudeCodeSettings model={model} onChange={onChange} />}
+      {!isClaudeCode && <>
       <div>
         <Label>{text('base_url', 'base_url')}</Label>
         <Input value={model.baseUrl} onChange={(e) => update('baseUrl', e.target.value)} placeholder="https://api.openai.com" />
@@ -215,6 +224,7 @@ function ModelForm({
         <Label>{text('API Key', 'API Key')}</Label>
         <Input type="password" value={model.apiKey} onChange={(e) => update('apiKey', e.target.value)} placeholder="sk-..." />
       </div>
+      </>}
 
       <div className="grid grid-cols-2 gap-2">
         <div>
@@ -232,6 +242,7 @@ function ModelForm({
           <Input
             type="number"
             min={0}
+            disabled={isClaudeCode}
             value={currentCapabilities.maxOutputTokens}
             onChange={(e) => updateCapabilities({ maxOutputTokens: e.target.value === '' ? 0 : parseInt(e.target.value) || 0 })}
           />
@@ -242,6 +253,7 @@ function ModelForm({
         <div>
           <Label>{text('温度', 'Temperature')}</Label>
           <Input 
+            disabled={isClaudeCode}
             value={String(model.temperature)} 
             onChange={(e) => update('temperature', (e.target.value === '' ? '' : parseFloat(e.target.value)) as number)} 
             onBlur={() => {
@@ -252,7 +264,7 @@ function ModelForm({
         </div>
       </div>
 
-      {!model.purposes.includes('embedding') && (
+      {!model.purposes.includes('embedding') && !isClaudeCode && (
         <ReasoningPolicySettings model={model} onModelChange={onChange} />
       )}
 
@@ -261,7 +273,7 @@ function ModelForm({
         <Button
           variant="outline"
           onClick={handleTest}
-          disabled={testing || !model.baseUrl || (!model.apiKey && model.provider !== 'ollama')}
+          disabled={testing || (!isClaudeCode && (!model.baseUrl || (!model.apiKey && model.provider !== 'ollama')))}
         >
           <Zap size={13} />
           {testing ? text('测试中...', 'Testing...') : text('测试连接', 'Test connection')}
@@ -269,7 +281,7 @@ function ModelForm({
         <Button
           className="flex-1"
           onClick={onSave}
-          disabled={saving || !model.name || (!model.apiKey && model.provider !== 'ollama')}
+          disabled={saving || !model.name || !model.modelName.trim() || (!isClaudeCode && !model.apiKey && model.provider !== 'ollama')}
         >
           <Save size={13} />
           {saving ? text('保存中...', 'Saving...') : text('保存', 'Save')}

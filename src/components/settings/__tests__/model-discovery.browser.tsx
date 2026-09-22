@@ -106,6 +106,37 @@ afterEach(async () => {
 })
 
 describe('model discovery settings flow', () => {
+  it('configures and tests Claude CLI without HTTP credentials or model discovery', async () => {
+    const discoverModels = vi.fn()
+    const testConnection = vi.fn(async () => ({ success: true }))
+    const { saveModel } = await renderSettings(savedProfile(), discoverModels)
+    useLLMStore.setState({ testConnection })
+    await act(async () => {
+      await page.getByRole('button', { name: '编辑', exact: true }).click()
+    })
+    const providerSelect = Array.from(document.querySelectorAll('select')).find(select =>
+      Array.from(select.options).some(option => option.value === 'claude-code'))
+    if (!providerSelect) throw new Error('Missing Claude provider option')
+    await act(async () => {
+      providerSelect.value = 'claude-code'
+      providerSelect.dispatchEvent(new Event('change', { bubbles: true }))
+    })
+    expect(document.querySelector('input[placeholder="sk-..."]')).toBeNull()
+    await expect.element(page.getByRole('button', { name: '测试连接', exact: true })).toBeEnabled()
+    await act(async () => {
+      await page.getByRole('button', { name: '测试连接', exact: true }).click()
+    })
+    expect(testConnection).toHaveBeenCalledWith(expect.objectContaining({ provider: 'claude-code', modelName: 'default', baseUrl: '', apiKey: '' }))
+    await act(async () => {
+      await page.getByPlaceholder('留空自动查找；Windows 填写 claude.exe 完整路径').fill('C:\\Tools\\claude.exe')
+    })
+    await act(async () => {
+      await page.getByRole('button', { name: '保存配置', exact: true }).click()
+    })
+    expect(saveModel).toHaveBeenCalledWith(expect.objectContaining({ provider: 'claude-code', claudeExecutable: 'C:\\Tools\\claude.exe', apiKey: '', baseUrl: '' }))
+    expect(discoverModels).not.toHaveBeenCalled()
+  })
+
   it('does not discover when settings opens and refreshes explicitly with the current form configuration', async () => {
     const model = savedProfile()
     const discoverModels = vi.fn(async () => ({

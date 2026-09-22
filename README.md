@@ -127,6 +127,12 @@ flowchart LR
 
 “自定义 API”指的是在上述协议范围内自定义地址、模型标识和凭据；它不是任意 HTTP 协议或可执行脚本编辑器。Anthropic、Azure、KoboldAI 原生协议等不同接口需要单独的适配器，不能仅靠替换 URL 保证兼容。
 
+### Claude Code CLI
+
+生成模型的服务商可选择 **Claude Code CLI**，复用本机 Claude Code 的认证与服务地址，无需填写 API Key。先在终端确认 `claude -p` 可用，模型填写 `default` 或账号可用的模型 ID；可执行文件路径留空自动查找，Windows 也可指定 `claude.exe` 完整路径。测试连接并保存后即可用于小说生成，支持实时输出、取消及 JSON 对象校验。
+
+此入口不支持向量模型；温度、输出 Token 上限及项目推理策略不传给 CLI。认证若来自 PowerShell 临时环境变量，需从同一环境启动应用。详见[配置与限制](docs/claude-code-cli.md)。
+
 ### Ollama
 
 推荐通过 Ollama 的 OpenAI-compatible 服务接入：

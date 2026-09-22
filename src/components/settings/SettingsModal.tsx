@@ -1,3 +1,4 @@
+import { ClaudeCodeSettings } from './ClaudeCodeSettings'
 import { useState, useEffect, useLayoutEffect, useRef } from 'react'
 import {
   X, Plus, Trash2, Check, Save, Globe, Cpu, Database,
@@ -556,10 +557,10 @@ function ModelForm({
     onChange({
       ...model,
       provider,
-      ...(provider === 'codex' ? { apiKey: '', purposes: ['generation', 'refinement', 'summary'] as ModelProfile['purposes'] } : {}),
+      ...((provider === 'codex' || provider === 'claude-code') ? { apiKey: '', purposes: ['generation', 'refinement', 'summary'] as ModelProfile['purposes'] } : {}),
       protocol: (p?.protocol ?? 'openai') as 'openai' | 'gemini',
       baseUrl: p?.baseUrl ?? '',
-      modelName: provider === 'codex' ? 'default' : defaultModelName,
+      modelName: (provider === 'codex' || provider === 'claude-code') ? 'default' : defaultModelName,
       maxTokens: capabilities?.maxOutputTokens ?? firstModel?.maxTokens ?? 4096,
       capabilities: capabilities ? { ...capabilities } : undefined,
     })
@@ -677,6 +678,7 @@ function ModelForm({
           >
             <option value="openai">OpenAI</option>
             {!isEmbedding && <option value="codex">Codex CLI</option>}
+            {!isEmbedding && <option value="claude-code">Claude Code CLI</option>}
             <option value="novelai">NovelAI</option>
             <option value="deepseek">DeepSeek</option>
             <option value="gemini">Google Gemini</option>
@@ -691,10 +693,10 @@ function ModelForm({
           <Label>{text('调用协议', 'Protocol')}</Label>
           <NativeSelect
             value={model.protocol}
-            disabled={model.provider === 'codex'}
+            disabled={model.provider === 'codex' || model.provider === 'claude-code'}
             onChange={(e) => up('protocol', e.target.value as 'openai' | 'gemini')}
           >
-            <option value="openai">OpenAI</option>
+            <option value="openai">{model.provider === 'claude-code' ? 'Claude Code CLI' : 'OpenAI'}</option>
             <option value="gemini">Gemini</option>
           </NativeSelect>
         </div>
@@ -766,8 +768,9 @@ function ModelForm({
           <p className="text-xs text-[var(--color-text-muted)]">{text('温度、输出 Token 上限及项目推理策略不传给 CLI；采用 Codex 默认行为。每次请求独立，不读取个人 Codex 配置。', 'Temperature, output token limits and project reasoning settings are not passed to the CLI. Each request is independent and uses Codex defaults without personal configuration.')}</p>
         </div>
       )}
+      {model.provider === 'claude-code' && <ClaudeCodeSettings model={model} onChange={onChange} />}
       {/* Base URL */}
-      {model.provider !== 'codex' && <>
+      {(model.provider !== 'codex' && model.provider !== 'claude-code') && <>
       <div>
         <Label>{text('base_url', 'base_url')}</Label>
         <Input
@@ -876,11 +879,11 @@ function ModelForm({
         />
       </div>
 
-      {!isEmbedding && model.provider !== 'codex' && (
+      {!isEmbedding && (model.provider !== 'codex' && model.provider !== 'claude-code') && (
         <ProjectCreativeStrategySettings />
       )}
 
-      {!isEmbedding && model.provider !== 'codex' && (
+      {!isEmbedding && (model.provider !== 'codex' && model.provider !== 'claude-code') && (
         <div className="rounded-lg border border-[var(--color-border)]" data-model-advanced-settings>
           <button
             type="button"
@@ -1002,7 +1005,7 @@ function ModelForm({
         <Button
           variant="outline"
           onClick={handleTest}
-          disabled={testing || (model.provider !== 'codex' && (!model.baseUrl || (!model.apiKey && model.provider !== 'ollama')))}
+          disabled={testing || ((model.provider !== 'codex' && model.provider !== 'claude-code') && (!model.baseUrl || (!model.apiKey && model.provider !== 'ollama')))}
         >
           <Zap size={13} />
           {testing ? text('测试中...', 'Testing...') : text('测试连接', 'Test connection')}
@@ -1010,7 +1013,7 @@ function ModelForm({
         <Button
           className="flex-1"
           onClick={onSave}
-          disabled={saving || !model.modelName.trim() || (model.provider !== 'codex' && (!model.baseUrl.trim() || (!model.apiKey.trim() && model.provider !== 'ollama')))}
+          disabled={saving || !model.modelName.trim() || ((model.provider !== 'codex' && model.provider !== 'claude-code') && (!model.baseUrl.trim() || (!model.apiKey.trim() && model.provider !== 'ollama')))}
         >
           <Save size={13} />
           {saving ? text('保存中...', 'Saving...') : text('保存配置', 'Save configuration')}

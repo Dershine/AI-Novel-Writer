@@ -61,6 +61,10 @@ export interface ProviderPreset {
 export function createProviderCatalog(): ProviderPreset[] {
   return [
   {
+    provider: 'claude-code', displayName: 'Claude Code CLI', baseUrl: '', protocol: 'openai',
+    models: [{ name: 'default', maxTokens: 16384 }], embeddingModels: [],
+  },
+  {
     provider: 'codex', displayName: 'Codex CLI', baseUrl: '', protocol: 'openai',
     models: [{ name: 'default', maxTokens: 16384 }], embeddingModels: [],
   },

@@ -47,6 +47,7 @@ vi.mock('../../services/project-access', () => ({
 }))
 
 import { registerLLMController } from '../llm-controller'
+import { writeJsonFile } from '../../utils/config-utils'
 
 const deepSeekModel: ModelProfile = {
   id: 'deepseek-reasoner',
@@ -103,6 +104,16 @@ function connectionHandler(): IpcHandler {
 
 beforeAll(() => {
   registerLLMController()
+})
+
+it('persists Claude CLI paths without stale HTTP credentials and rejects embeddings', async () => {
+  const save = mocks.handlers.get('llm:save-model')!
+  const profile: ModelProfile = { ...deepSeekModel, provider: 'claude-code', claudeExecutable: 'C:\\Tools\\claude.exe' }
+  expect(await save({}, profile)).toEqual({ success: true })
+  expect(writeJsonFile).toHaveBeenCalledWith('models.json', [expect.objectContaining({ provider: 'claude-code', claudeExecutable: profile.claudeExecutable, apiKey: '', baseUrl: '', protocol: 'openai' })])
+  vi.mocked(writeJsonFile).mockClear()
+  expect(await save({}, { ...profile, purposes: ['embedding'] })).toMatchObject({ success: false })
+  expect(writeJsonFile).not.toHaveBeenCalled()
 })
 
 beforeEach(() => {

@@ -135,6 +135,12 @@ The app currently supports two request protocols:
 
 “Custom API” means a configurable URL, model identifier, and credential within those protocols. It is not an arbitrary HTTP protocol editor or a place to run user-supplied scripts. Protocols such as Anthropic Messages, Azure OpenAI, or native KoboldAI require dedicated adapters rather than a URL swap.
 
+### Claude Code CLI
+
+Choose **Claude Code CLI** as a generation provider to reuse local Claude Code authentication and its service endpoint, without entering an API key. Verify `claude -p` in your terminal first. Use `default` or an available model ID; leave the executable path blank for auto-detection, or provide the full path to `claude.exe` on Windows. Test and save the profile to use it for novel generation, with streaming, cancellation, and JSON object validation.
+
+This provider does not support embeddings. Temperature, output token limits, and project reasoning settings are not passed to the CLI. If authentication uses temporary PowerShell environment variables, launch the app from that environment. See the [configuration guide (Chinese)](docs/claude-code-cli.md).
+
 ### Ollama
 
 Use Ollama through its OpenAI-compatible service:
