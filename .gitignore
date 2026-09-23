@@ -68,3 +68,4 @@ tailwind.config.js.bak
 
 # Local shortcut for launching an existing build
 /start-source.cmd
+/start.cmd

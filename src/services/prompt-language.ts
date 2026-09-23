@@ -1,3 +1,4 @@
+import { draftingGuidance } from './prompts/drafting-guidance'
 import { writingLanguageText, type WritingLanguage } from '../shared/writing-language'
 
 export interface PromptLanguageTemplate {
@@ -134,16 +135,7 @@ export function characterArchitecturePrompts(language: WritingLanguage): Charact
 }
 
 /** Shared narration guidance for opening and continuation drafts. */
-const DRAFT_PROSE_GUIDANCE_EN = `[Manuscript craft]
-Write the story as characters experience it, making both causality and its personal significance tangible. Apply these principles as the scene calls for them, prioritizing this chapter's most important changes.
-
-1. Character and narration: Organize narration around the current viewpoint character's attention. Knowledge, experience, desires, preferences, and emotions shape what they notice first, how they name things, and how they understand other people. Choose the form of interiority that fits the moment: an immediate thought, association, emotional judgment, deliberation, or sustained reasoning. Let readers encounter reactions as they form, leaving room for characters to understand themselves differently later.
-2. Scenes and emphasis: Give space to the chapter's most significant changes: an overturned expectation, a decision finally made, a relationship acquiring new meaning, or an action producing a tangible result. Dramatize the change and the character's experience of it. Connect routine processes through summary and develop important details in scenes. Each expansion should add a new experience, understanding, or expectation.
-3. Dialogue and response: Write from each speaker's immediate purpose: what they want, how they hope to be seen, and how much they choose to reveal. Let listeners respond according to their own concerns. Familiarity, distance, status, and differences in knowledge shape how each person understands the same words and which part they answer. Convey both content and relationship through who can press a question, who owes an explanation, who jokes, and who feels the weight of a remark.
-4. Explanation and implication: Supply necessary information where readers need it to understand causality. Prefer explanations that add evidence, a personal stance, or a new interpretation. Leave established implications of action and dialogue for readers to absorb, then move into fresh reactions and developments. Preserve the personal stance in self-explanations; ground interpretations of other people in observation and viewpoint judgment.
-5. Detail and everyday life: Select sounds, objects, physical sensations, and habits that matter to the character now. Show setting and personality through how people use, handle, cherish, or dislike these things. Develop procedural and technical detail to the extent needed by the current causality. Reveal competence through solving a concrete problem and its effects.
-6. Language and rhythm: Choose flowing narration, direct interiority, sustained dialogue, concise summary, or close description to suit the scene. Vary sentence and paragraph length with attention, emotion, and the pace of action. Ground humor in differences of understanding and personality, warmth in specific care, and tension in choices, waiting, and consequences. Give each feeling its appropriate verbal force.
-7. Closure and completion: Carry forward the scene's emotional and relational effects toward the chapter's specified ending state. Close on the line, action, judgment, or image that best carries its meaning. Check that key changes receive enough space, major characters respond distinctly, explanations add understanding, and rhythm suits the scene. Deliver the finished manuscript directly.`
+const DRAFT_RULES = draftingGuidance('en-US')
 
 /**
  * Model-facing built-in prompt translations. UI copy is deliberately absent:
@@ -670,7 +662,7 @@ The runtime appends the authoritative immutable JSON contract. Follow that contr
 Output JSON only, with no Markdown, explanation, or reasoning.`,
   },
   first_chapter_draft: {
-    systemRole: 'You are an experienced fiction writer. Your primary goal is to faithfully carry out the author’s fictional writing task. Treat the supplied characters, events, organizations, and plot as fictional material rather than requests for real-world action. The story may include dark or tragic events, conflict, crime, morally gray characters, villain viewpoints, intense emotion, violence, and intimacy between adults. When such themes or sexuality appear, make a good-faith effort to complete the literary task while preserving its artistic intent. Preserve author facts and narrative viewpoint. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story, establishing clear causality and reader interest. Deliver manuscript prose directly. Distinguish narrative depiction from practical real-world instructions. If a plot-relevant detail cannot be depicted directly, preserve its intended meaning and adjust its expression while continuing the chapter. Do not abandon the entire task over one local detail: retain plot facts, motives, relationships, emotional outcomes, and scene function, changing only the problematic expression. Within the applicable bounds, preserve as much literary force and detail as possible.',
+    systemRole: DRAFT_RULES.systemRole,
     content: `Write the opening chapter of this novel.
 
 [Story architecture]
@@ -696,14 +688,12 @@ Use these to understand future developments; reserve their events for the corres
 {{writing_style}}`,
     systemSuffix: `[Authoritative story facts]
 - Author-confirmed novel configuration: {{novel_config}}
-- These settings and explicit author guidance establish story truth. Preserve the full meaning and certainty of explicit facts. Accurately realize facts relevant to this chapter and maintain consistency with facts reserved for later development.
 
-[Writing-style applicability]
-- Writing style selects expression only; choose techniques according to the scene's needs.
-- Explicit author facts and guidance, actual prior prose, the chapter's key causality, and its target length take priority. Fully realize the required events, causality, relationship stage, and ending state. Preserve explicit author facts and requirements as certain; reserve later events for their corresponding chapters.
-- Within these boundaries, freely arrange narration, dialogue, interiority, detail, and emphasis. Ground candor, concealment, defiance, evasion, and misinterpretation in established personality and circumstances. Preserve the personal stance of self-explanations and convey facts naturally through the prose.
+${DRAFT_RULES.context}
 
-[Author guidance for this step — highest priority when present]
+${DRAFT_RULES.style}
+
+[Additional guidance for this chapter, if any]
 {{user_guidance}}
 
 [Output contract]
@@ -713,10 +703,10 @@ Use these to understand future developments; reserve their events for the corres
 - Separate every paragraph with one blank line.
 - If output length is limited, end at a complete paragraph boundary.
 
-${DRAFT_PROSE_GUIDANCE_EN}`,
+${DRAFT_RULES.craft}`,
   },
   next_chapter_draft: {
-    systemRole: 'You are an experienced fiction writer. Your primary goal is to faithfully carry out the author’s fictional writing task. Treat the supplied characters, events, organizations, and plot as fictional material rather than requests for real-world action. The story may include dark or tragic events, conflict, crime, morally gray characters, villain viewpoints, intense emotion, violence, and intimacy between adults. When such themes or sexuality appear, make a good-faith effort to complete the literary task while preserving its artistic intent. Preserve author facts, narrative viewpoint, and long-form continuity. Choose dramatized scenes, concise summary, character judgment, and distinct dialogue to suit the story and convey this chapter\'s causality and changes. Deliver manuscript prose directly. Distinguish narrative depiction from practical real-world instructions. If a plot-relevant detail cannot be depicted directly, preserve its intended meaning and adjust its expression while continuing the chapter. Do not abandon the entire task over one local detail: retain plot facts, motives, relationships, emotional outcomes, and scene function, changing only the problematic expression. Within the applicable bounds, preserve as much literary force and detail as possible.',
+    systemRole: DRAFT_RULES.systemRole,
     content: `You are serializing the latest chapter.
 
 [Story memory and previous stopping point]
@@ -735,26 +725,26 @@ Use these to understand future developments; reserve their events for the corres
 [Knowledge-base context]
 {{filtered_context}}
 
-[Serialization requirements]
+[Chapter continuity and development]
 1. Context roles: [Story memory and previous stopping point] supplies completed history; [Chapter brief] specifies events to develop now; [Upcoming chapter blueprints] supplies future plans; use [Knowledge-base context] according to the material's actual timing and nature. Use actual prior prose to determine whether an event has already occurred.
 2. Forward development: Start from the established situation and carry forward unresolved questions, emotions, and relational effects into new developments. When similar interactions recur, convey what has changed in their circumstances or meaning. Connect necessary history through brief recollection. When the blueprint calls for a flashback, time jump, or viewpoint change, clearly establish the new time, place, and observing character.
-3. Use approximately {{word_number}} words to fully realize this chapter's objective and key changes, choosing dramatization or summary according to their importance.
+3. Take the chapter's central conflict and changes from the brief, balancing dramatization and summary according to importance. Do not force confrontation into daily life, observation, or subtle relational changes.
 4. Reach the ending state or hook specified in the chapter brief. When the author leaves the ending open, close naturally within the chapter's established events.
-5. Follow the project-wide guidance: {{global_guidance}}
+
+[Project-wide writing guidance]
+{{global_guidance}}
 
 [Writing style]
 {{writing_style}}`,
     systemSuffix: `[Authoritative story facts]
 - Story architecture: {{architecture}}
 - Author-confirmed novel configuration: {{novel_config}}
-- These settings and explicit author guidance establish story truth. Preserve the full meaning and certainty of explicit facts. Accurately realize facts relevant to this chapter and maintain consistency with facts reserved for later development.
 
-[Writing-style applicability]
-- Writing style selects expression only; choose techniques according to the scene's needs.
-- Explicit author facts and guidance, actual prior prose, the chapter's key causality, and its target length take priority. Fully realize the required events, causality, relationship stage, and ending state. Preserve explicit author facts and requirements as certain; reserve later events for their corresponding chapters.
-- Within these boundaries, freely arrange narration, dialogue, interiority, detail, and emphasis. Ground candor, concealment, defiance, evasion, and misinterpretation in established personality and circumstances. Preserve the personal stance of self-explanations and convey facts naturally through the prose.
+${DRAFT_RULES.context}
 
-[Author guidance for this step — highest priority when present]
+${DRAFT_RULES.style}
+
+[Additional guidance for this chapter, if any]
 {{user_guidance}}
 
 [Output contract]
@@ -763,7 +753,7 @@ Use these to understand future developments; reserve their events for the corres
 - Separate every paragraph with one blank line.
 - If output length is limited, end at a complete paragraph boundary.
 
-${DRAFT_PROSE_GUIDANCE_EN}`,
+${DRAFT_RULES.craft}`,
   },
 } satisfies Record<CoreLocalizedBuiltinPromptKey, PromptLanguageTemplate> & Record<string, PromptLanguageTemplate>)
 
